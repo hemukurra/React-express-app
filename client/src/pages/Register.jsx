@@ -1,42 +1,52 @@
 import { useState } from "react";
-import { api } from "../api.js";
-import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const nav = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [msg, setMsg] = useState("");
-  const [err, setErr] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
-  async function onSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setErr(""); setMsg("");
+
     try {
-      await api("/auth/register", { method: "POST", body: JSON.stringify(form) });
-      setMsg("✅ Registered! Please log in.");
-      setTimeout(() => nav("/login"), 800);
-    } catch (e) {
-      setErr(e.message);
+      const res = await fetch("http://localhost:4000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("✅ Registered successfully!");
+      } else {
+        setMessage(`❌ Error: ${data.message || "Failed"}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("❌ Failed to connect to server.");
     }
   }
 
   return (
-    <form onSubmit={onSubmit} style={{ display: "grid", gap: 8 }}>
+    <div>
       <h2>Register</h2>
-      {msg && <div style={{ color: "green" }}>{msg}</div>}
-      {err && <div style={{ color: "crimson" }}>{err}</div>}
-      <input
-        placeholder="Email"
-        value={form.email}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-      />
-      <input
-        placeholder="Password"
-        type="password"
-        value={form.password}
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-      />
-      <button>Create Account</button>
-    </form>
+      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 8 }}>
+        <input
+          type="email"
+          placeholder="Enter email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Register</button>
+      </form>
+
+      {message && <p>{message}</p>}
+    </div>
   );
 }

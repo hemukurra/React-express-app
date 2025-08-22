@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api.js";
+import { api } from "../api"; // if using the helper above
 
 export default function Items() {
   const [items, setItems] = useState([]);
@@ -18,19 +18,37 @@ export default function Items() {
   async function addItem(e) {
     e.preventDefault();
     if (!title.trim()) return;
-    const newItem = await api("/items", { method: "POST", body: JSON.stringify({ title }) });
-    setItems([newItem, ...items]);
-    setTitle("");
+    try {
+      const newItem = await api("/items", {
+        method: "POST",
+        body: JSON.stringify({ title }),
+      });
+      setItems([newItem, ...items]);
+      setTitle("");
+    } catch (e) {
+      setErr(e.message);
+    }
   }
 
   async function toggleItem(item) {
-    const updated = await api(`/items/${item.id}`, { method: "PATCH", body: JSON.stringify({ bought: !item.bought }) });
-    setItems(items.map(i => i.id === item.id ? updated : i));
+    try {
+      const updated = await api(`/items/${item.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ bought: !item.bought }),
+      });
+      setItems(items.map(i => (i.id === item.id ? updated : i)));
+    } catch (e) {
+      setErr(e.message);
+    }
   }
 
   async function deleteItem(id) {
-    await api(`/items/${id}`, { method: "DELETE" });
-    setItems(items.filter(i => i.id !== id));
+    try {
+      await api(`/items/${id}`, { method: "DELETE" });
+      setItems(items.filter(i => i.id !== id));
+    } catch (e) {
+      setErr(e.message);
+    }
   }
 
   useEffect(() => { load(); }, []);

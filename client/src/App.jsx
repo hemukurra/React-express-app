@@ -1,8 +1,8 @@
 import { Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import Items from "./pages/Items.jsx";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Items from "./pages/Items";
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -13,26 +13,19 @@ function PrivateRoute({ children }) {
 
 export default function App() {
   const token = localStorage.getItem("token");
-
   return (
     <div style={{ maxWidth: 700, margin: "24px auto", fontFamily: "system-ui" }}>
       <nav style={{ display: "flex", gap: 12, marginBottom: 16 }}>
         <Link to="/">Home</Link>
-        <Link to="/login">Login</Link>
-        <Link to="/register">Register</Link>
         <Link to="/items">Items</Link>
+        {!token && <Link to="/login">Login</Link>}
+        {!token && <Link to="/register">Register</Link>}
+        {token && <button onClick={() => { localStorage.removeItem("token"); window.location.href = "/login"; }}>Logout</button>}
       </nav>
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route
-          path="/items"
-          element={
-            <PrivateRoute>
-              <Items />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/items" element={<PrivateRoute><Items /></PrivateRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>
